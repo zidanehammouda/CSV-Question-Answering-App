@@ -18,9 +18,20 @@ client = OpenAI(api_key=os.environ.get("OPEN_API_KEY"))
 
 prompt_template = """df is a dataframe about {description}. df has these columns: {columns}. Write python code that answers this question: Print {question}
 """
-description_template = """This is an example row of a given dataset titled {filename}.\n {first_row}. Complete this sentence with a maximum of 50 words: df is a dataframe about"""
+description_template = """This is an example row of a given dataset titled {filename}.\n {example_row}. Complete this sentence with a maximum of 50 words: df is a dataframe about"""
 
-def extract_response(text):
+suggestion_template = """This is an example row of a given dataset titled {filename}.\n {example_row}. Write 5 simple printing/visualizing questions about the dataset so I can solve it using code."""
+
+libraries = """
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from scipy import stats
+
+"""
+
+def extract_code(text):
     try:
         matches = []
         pattern = r"```python(.*?)```"
@@ -37,8 +48,7 @@ def execute(code,namespace):
     try:
         buffer = io.StringIO()
         sys.stdout = buffer
-
-        exec(code,namespace)
+        exec(libraries+code,namespace)
 
         sys.stdout = sys.__stdout__
 
@@ -49,7 +59,7 @@ def execute(code,namespace):
 
 def describe_file(df,filename):
     first_row = df.iloc[0].to_dict()
-    prompt = description_template.format(filename=filename,first_row=first_row)
+    prompt = description_template.format(filename=filename,example_row=first_row)
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
@@ -67,7 +77,7 @@ def run(namespace,description,columns,question):
     }
 }
     full_response = requests.request("POST", request['url'], headers=request['headers'], data=request['payload']).json()["response"]
-    extracted_code = extract_response(full_response)
+    extracted_code = extract_code(full_response)
     execution = execute(extracted_code['response'],namespace)
     
     data = {
@@ -84,4 +94,11 @@ def run(namespace,description,columns,question):
     
     return data
 
-
+def suggest_questions(df,filename):
+    example_row = dict(df.iloc[0])
+    prompt = suggestion_template.format(filename=filename,example_row=example_row)
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content

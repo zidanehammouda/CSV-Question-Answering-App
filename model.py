@@ -18,6 +18,8 @@ model = {
 device = "cuda"
 
 
+
+
 def generate_response(prompt):
     try:
         coder_model_prompt = [
