@@ -3,6 +3,21 @@ import pandas as pd
 from app import run, describe_file,suggest_questions
 import os 
 from PIL import Image
+import logging
+import sys
+from dotenv import load_dotenv 
+load_dotenv()
+
+if not os.environ.get('method'):
+    if len(sys.argv) > 1 and sys.argv[1] in ["server","api","local"] :
+        os.environ['method'] = sys.argv[1]
+    else:
+        print("Please type a valid model method")
+        sys.exit()
+
+logging.basicConfig(level=logging.INFO)
+logging.info(os.environ.get('method'))
+
 
 def read_image():
     directory='./'
@@ -47,8 +62,13 @@ def process_csv_question_and_description(uploaded_file, description, question):
     df_columns = str(list(df.columns))
     namespace = {'df': df}
     
-    response = run(namespace, description, df_columns, question)
+    response = run(namespace, description, df_columns, question,os.environ.get("method"))
     image = read_image()
+
+    logging.basicConfig(level=logging.INFO)
+    logging.info("This is an info message")
+    logging.info(response)
+
     execution = response['execution']
     return execution,image
 

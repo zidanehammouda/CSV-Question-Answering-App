@@ -1,0 +1,14 @@
+python-dotenv
+requests
+gradio
+pillow
+flask
+transformers
+torch
+openai
+
+seaborn
+pandas
+matplotlib
+numpy
+scipy
