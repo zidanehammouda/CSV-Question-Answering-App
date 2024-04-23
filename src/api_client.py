@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-gpt_client = OpenAI(api_key=os.environ.get("OPEN_API_KEY"))
+gpt_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def predict_gpt(prompt):
     response = gpt_client.chat.completions.create(

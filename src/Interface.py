@@ -65,12 +65,16 @@ def process_csv_question_and_description(uploaded_file, description, question):
     response = run(namespace, description, df_columns, question,os.environ.get("method"))
     image = read_image()
 
-    logging.basicConfig(level=logging.INFO)
-    logging.info("This is an info message")
-    logging.info(response)
-
+    # logging.basicConfig(level=logging.INFO)
+    # logging.info("This is an info message")
+    # logging.info(response)
+    
     execution = response['execution']
-    return execution,image
+    if execution != None:
+        return execution,image
+    else:
+        return response['error'],image
+
 
 with gr.Blocks(css=".file_container {max-height:150px} .file_container > button > div {display:flex;flex-direction:row}") as app:
     gr.Markdown("## CSV Question Answering App")
@@ -80,7 +84,7 @@ with gr.Blocks(css=".file_container {max-height:150px} .file_container > button 
         with gr.Column(): 
             file_input = gr.File(label="Upload CSV File",elem_classes=['file_container'])
             description_input = gr.Textbox(label="Dataset Description", placeholder="The description will be generated here...")
-            question_input = gr.Textbox(label="For visualizations begin your question with Plot and save")
+            question_input = gr.Textbox(label="For better visualization results start your input with \"Plot:\"")
             submit_button = gr.Button("Submit")
             suggestions=gr.Text(label="Suggestions")
         with gr.Column():  
